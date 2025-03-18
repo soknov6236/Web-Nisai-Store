@@ -45,7 +45,6 @@ if ($login_successful) { // Replace this with your actual login logic
 <body >
   <script>
       $(function(){
-          //alert("test");
           $("#btnlogin").click(function(){
               var user = $("#txtuser").val();
               var pass = $("#txtpass").val();
