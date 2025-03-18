@@ -36,31 +36,28 @@ session_start();
 
 </head>
 
-<body >
+<body>
   <script>
-      $(function(){
-          //alert("test");
-          $("#btnlogin").click(function(){
-              var user = $("#txtuser").val();
-              var pass = $("#txtpass").val();
-             // alert(user+" "+pass);
-              if(user=="" || pass==""){
-                //alert("Empty user or password");
+    $(function(){
+        $("#btnlogin").click(function(){
+            var user = $("#txtuser").val();
+            var pass = $("#txtpass").val();
+            if(user == "" || pass == ""){
                 $("#msgError").html("Empty user or password!");
-              }else{
-                  //$("#msgError").html("");
-                  $.post("checkuser.php",{txtuser:user,txtpass:pass},function(data){
-                         // alert(data);
-                         if(data==0){
-                              $("#msgError").html("Invalid User or Password!");
-                         }else{
-                          window.location.href="Backend/index.php"
-                         }
-                  });
-              }
-          });
-      });
-    </script>
+            } else {
+                $.post("checkuser.php", { txtuser: user, txtpass: pass }, function(data){
+                    if(data == "0"){
+                        $("#msgError").html("Invalid User or Password!");
+                    } else {
+                        window.location.href = "Backend/index.php"; // Redirect to the dashboard
+                    }
+                });
+            }
+        });
+    });
+
+  </script>
+
   <main>
     <div class="container">
 
@@ -73,15 +70,11 @@ session_start();
               <div class="card mb-3">
 
                 <div class="card-body">
-                
+
                   <div class="pt-4 pb-2">
-                  <!-- <div class="d-flex justify-content-center">
-                  <img style="width: 150px;" src="assets/img/logo_report1.png" alt="">
-                </div>End Logo  -->
+
                     <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                    <p id="msgError" class="text-center small" style="color:red">
-                      
-                    </p>
+                    <p id="msgError" class="text-center small" style="color:red"></p>
                   </div>
 
                   <form class="row g-3 needs-validation" novalidate>
@@ -96,13 +89,13 @@ session_start();
                     </div>
 
                     <div class="col-12">
-                      
+
                       <label for="yourPassword" class="form-label">Password</label>
-                      <div class="input-group has-validation">
-                        <span class="input-group-text" id="inputGroupPrepend"><i class="bi bi-lock"></i></span> 
-                      <input type="password" name="txtpass" class="form-control" id="txtpass" required>
-                      <div class="invalid-feedback">Please enter your password!</div>
-                    </div>
+                        <div class="input-group has-validation">
+                          <span class="input-group-text" id="inputGroupPrepend"><i class="bi bi-lock"></i></span>
+                          <input type="password" name="txtpass" class="form-control" id="txtpass" required>
+                          <div class="invalid-feedback">Please enter your password!</div>
+                        </div>
                     </div>
 
                     <div class="col-12">
@@ -116,7 +109,7 @@ session_start();
                 </div>
               </div>
 
-              
+
             </div>
           </div>
         </div>
@@ -127,8 +120,9 @@ session_start();
   </main><!-- End #main -->
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-   <!-- Custom CSS for Background Image -->
-   <style>
+
+  <!-- Custom CSS for Background Image -->
+  <style>
     body {
       background-image: url('assets/img/bg_clothing4.jpg'); /* Path to your background image */
       background-size: cover; /* Cover the entire page */
