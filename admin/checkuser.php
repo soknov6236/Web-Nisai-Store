@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Login successful
             $_SESSION['USERID'] = $row['id'];
             $_SESSION['USERNAME'] = $row['username'];
-            $_SESSION['login_success'] = "Login successful! Welcome back, " . $row['username'] . "."; 
+            $_SESSION['login_success'] = "Login successful! Welcome back to Nisai Store!" . $row['username'] . "."; 
             echo 1; // Success
         } else {
             // Invalid password
