@@ -4,10 +4,12 @@
     &copy; Copyright <strong><span>Nisai Store</span></strong>. All Rights Reserved
   </div>
   <div class="credits">
-    <a href="https://web.facebook.com/profile.php?id=100076555193118/" target="_blank">
-      <i class="bi bi-facebook"></i></a>
-    <a href="#"><i class="bi bi-browser-chrome"></i></a>
-    <a href="#"><i class="bi bi-telegram"></i></a>
+    <div class="icon">
+      <a href="https://web.facebook.com/profile.php?id=100076555193118/" target="_blank">
+        <i class="bi bi-facebook"></i></a>
+      <a href="#"><i class="bi bi-browser-chrome"></i></a>
+      <a href="#"><i class="bi bi-telegram"></i></a>
+    </div>
   </div>
 </footer><!-- End Footer -->
 

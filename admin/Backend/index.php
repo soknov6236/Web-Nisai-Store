@@ -66,6 +66,7 @@ $total_stock = $row['total_stock'];
                     <h6>Filter</h6>
                   </li>
                   <li><a class="dropdown-item filter-revenue" href="#" data-filter="today">Today</a></li>
+                  <li><a class="dropdown-item filter-revenue" href="#" data-filter="week">This Week</a><li> 
                   <li><a class="dropdown-item filter-revenue" href="#" data-filter="month">This Month</a></li>
                   <li><a class="dropdown-item filter-revenue" href="#" data-filter="year">This Year</a></li>
                 </ul>
