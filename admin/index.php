@@ -1,11 +1,10 @@
 <?php
 session_start();
 
-// Simulate a successful login
-if ($login_successful) { // Replace this with your actual login logic
-    $_SESSION['login_success'] = "Login successful! Welcome back.";
-    header("Location: index.php"); // Redirect to the dashboard
-    exit();
+// Display login success message if it exists
+if (isset($_SESSION['login_success'])) {
+    echo "<script>alert('".$_SESSION['login_success']."');</script>";
+    unset($_SESSION['login_success']); // Clear the message after displaying
 }
 ?>
 <!DOCTYPE html>
@@ -42,56 +41,48 @@ if ($login_successful) { // Replace this with your actual login logic
 
 </head>
 
-<body >
+<body>
   <script>
       $(function(){
-          //alert("test");
           $("#btnlogin").click(function(){
               var user = $("#txtuser").val();
               var pass = $("#txtpass").val();
-             // alert(user+" "+pass);
               if(user=="" || pass==""){
-                //alert("Empty user or password");
                 $("#msgError").html("Empty user or password!");
               }else{
-                  //$("#msgError").html("");
                   $.post("checkuser.php",{txtuser:user,txtpass:pass},function(data){
-                         // alert(data);
                          if(data==0){
                               $("#msgError").html("Invalid User or Password!");
                          }else{
-                          window.location.href="Backend/index.php"
+                          window.location.href="Backend/index.php";
                          }
                   });
               }
           });
+          
+          // Allow login on Enter key press
+          $("#txtuser, #txtpass").keypress(function(e){
+              if(e.which == 13) {
+                  $("#btnlogin").click();
+              }
+          });
       });
-    </script>
+  </script>
+  
   <main>
     <div class="container">
-
       <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
         <div class="container">
           <div class="row justify-content-center">
             <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
-
-
               <div class="card mb-3">
-
                 <div class="card-body">
-                
                   <div class="pt-4 pb-2">
-                  <!-- <div class="d-flex justify-content-center">
-                  <img style="width: 150px;" src="assets/img/logo_report1.png" alt="">
-                </div>End Logo  -->
                     <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
-                    <p id="msgError" class="text-center small" style="color:red">
-                      
-                    </p>
+                    <p id="msgError" class="text-center small" style="color:red"></p>
                   </div>
 
                   <form class="row g-3 needs-validation" novalidate>
-
                     <div class="col-12">
                       <label for="yourUsername" class="form-label">Username</label>
                       <div class="input-group has-validation">
@@ -102,13 +93,12 @@ if ($login_successful) { // Replace this with your actual login logic
                     </div>
 
                     <div class="col-12">
-                      
                       <label for="yourPassword" class="form-label">Password</label>
                       <div class="input-group has-validation">
                         <span class="input-group-text" id="inputGroupPrepend"><i class="bi bi-lock"></i></span> 
-                      <input type="password" name="txtpass" class="form-control" id="txtpass" required>
-                      <div class="invalid-feedback">Please enter your password!</div>
-                    </div>
+                        <input type="password" name="txtpass" class="form-control" id="txtpass" required>
+                        <div class="invalid-feedback">Please enter your password!</div>
+                      </div>
                     </div>
 
                     <div class="col-12">
@@ -118,39 +108,34 @@ if ($login_successful) { // Replace this with your actual login logic
                       <p class="small mb-0">Don't have account? <a href="pages-register.php">Create an account</a></p>
                     </div>
                   </form>
-
                 </div>
               </div>
-
-              
             </div>
           </div>
         </div>
-
       </section>
-
     </div>
-  </main><!-- End #main -->
+  </main>
 
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-   <!-- Custom CSS for Background Image -->
-   <style>
+  
+  <style>
     body {
-      background-image: url('assets/img/bg_clothing4.jpg'); /* Path to your background image */
-      background-size: cover; /* Cover the entire page */
-      background-position: center; /* Center the image */
-      background-repeat: no-repeat; /* Do not repeat the image */
-      background-attachment: fixed; /* Fix the background while scrolling */
+      background-image: url('assets/img/bg_clothing4.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for the card */
-      border-radius: 10px; /* Rounded corners for the card */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a shadow to the card */
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .card-body {
-      padding: 2rem; /* Add padding inside the card */
+      padding: 2rem;
     }
   </style>
 
@@ -166,7 +151,5 @@ if ($login_successful) { // Replace this with your actual login logic
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
-
 </body>
-
 </html>
