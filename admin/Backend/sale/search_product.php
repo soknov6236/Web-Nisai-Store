@@ -4,7 +4,7 @@ include("../../connection.php");
 
 // Redirect to login if user is not logged in
 if ($_SESSION['USERID'] == "") {
-    header("location:../../login.php");
+    header("location:../login.php");
     exit();
 }
 

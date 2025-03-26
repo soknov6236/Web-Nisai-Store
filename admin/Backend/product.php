@@ -3,156 +3,6 @@
 
 <main id="main" class="main">
 
-<script>
-$(document).ready(function(){
-    // Show Add Product Modal
-    $("#productAdd").click(function(){
-        $("#addProductModal").modal('show');
-    });
-
-    // Insert Product
-      $("#btnSave").click(function () {
-      var formData = new FormData();
-      formData.append("name", $("#txtName").val());
-      formData.append("category", $("#txtCategory").val());
-      formData.append("supplier", $("#txtSupplier").val());
-      formData.append("price", $("#txtPrice").val());
-      formData.append("stock", $("#txtStock").val());
-      formData.append("size", $("#txtSize").val());
-      formData.append("color", $("#txtColor").val());
-      //formData.append("gender", $("#txtGender").val());
-      formData.append("status", $("#txtStatus").val());
-      formData.append("product_code", $("#txtProductCode").val()); // Add this line
-      formData.append("picture", $("#txtPicture")[0].files[0]);
-
-      $.ajax({
-          url: "product/product_add.php",
-          type: "POST",
-          data: formData,
-          processData: false,
-          contentType: false,
-          success: function (data) {
-              if (data == "1") {
-                  alert("Product added successfully.");
-                  location.reload();
-              } else {
-                  alert("Error: " + data);
-              }
-          },
-        });
-      });
-
-  // Show Update Product Modal
-  $("#tblProduct").on("click", ".update", function () {
-    var row = $(this).closest("tr");
-    var id = row.find("td").eq(0).text();
-
-    $.post("product/product_get.php", { id: id }, function (data) {
-        var product = JSON.parse(data);
-
-        // Populate the update modal fields
-        $("#txtUpdateProductCode").val(product.product_code); 
-        $("#txtUpdateName").val(product.name);
-        $("#txtUpdateCategory").val(product.catid);
-        $("#txtUpdateSupplier").val(product.supplier_id);
-        $("#txtUpdatePrice").val(product.price);
-        $("#txtUpdateStock").val(product.stock);
-        $("#txtUpdateSize").val(product.size);
-        $("#txtUpdateColor").val(product.color);
-        $("#txtUpdateGender").val(product.gender);
-        $("#productId").val(id);
-
-        // Populate the current picture
-        var picturePath = "product/uploads/" + product.image; // Adjust the path as needed
-        $("#currentPicture").attr("src", picturePath);
-
-        $("#updateProductModal").modal('show');
-    });
-});
-
-// Search Product
-$("#searchProduct").on("input", function () {
-        var searchQuery = $(this).val().toLowerCase(); // Get the search query
-
-        // Loop through all table rows
-        $("#tblProduct tbody tr").each(function () {
-            var rowText = $(this).text().toLowerCase(); // Get the text content of the row
-
-            // Show or hide the row based on the search query
-            if (rowText.indexOf(searchQuery) !== -1) {
-                $(this).show(); // Show the row if it matches the search query
-            } else {
-                $(this).hide(); // Hide the row if it doesn't match
-            }
-        });
-    });
-
-$("#btnUpdateSave").click(function () {
-    var id = $("#productId").val();
-    var name = $("#txtUpdateName").val();
-    var category = $("#txtUpdateCategory").val();
-    var supplier = $("#txtUpdateSupplier").val();
-    var price = $("#txtUpdatePrice").val();
-    var stock = $("#txtUpdateStock").val();
-    var size = $("#txtUpdateSize").val();
-    var color = $("#txtUpdateColor").val();
-    var status = $("#txtUpdateStatus").val();
-    var product_code = $("#txtUpdateProductCode").val();
-    var picture = $("#txtUpdatePicture")[0].files[0];
-
-    var formData = new FormData();
-    formData.append("id", id);
-    formData.append("name", name);
-    formData.append("category", category);
-    formData.append("supplier", supplier);
-    formData.append("price", price);
-    formData.append("stock", stock);
-    formData.append("size", size);
-    formData.append("color", color);
-    formData.append("status", status);
-    formData.append("product_code", product_code);
-    formData.append("picture", picture);
-
-    $.ajax({
-        url: "product/product_update.php",
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-            if (data == "1") {
-                location.reload();
-            } else {
-                alert("Product update error.");
-            }
-        },
-    });
-});
-    // Delete Product
-    $("#tblProduct").on("click", ".del", function(){
-        var row = $(this).closest("tr");
-        var id = row.find("td").eq(0).text();
-
-        $("#deleteProductModal").modal('show');
-        $("#productToDelete").val(id);
-    });
-
-    // Confirm Delete
-    $("#btnDeleteConfirm").click(function(){
-        var id = $("#productToDelete").val();
-
-        $.post("product/product_delete.php", {productid: id}, function(data){
-            if(data == "1"){
-                //alert("Product deleted successfully.");
-                location.reload();
-            } else {
-                alert("Error deleting product.");
-            }
-        });
-    });
-});
-</script>
-
 <section class="section">
     <div class="pagetitle">
         <h1>Product page</h1>
@@ -432,8 +282,201 @@ $("#btnUpdateSave").click(function () {
     </div>
   </div>
 </div>
-
+<!-- Alert Message Container -->
+<div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; width: 300px;"></div>
 </main><!-- End #main -->
+
+<script>
+// Function to show alert messages
+function showAlert(message, type) {
+    var alertClass = 'alert-' + type;
+    var alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Append alert to container
+    $("#alertContainer").append(alertHtml);
+    
+    // Auto-remove alert after 3 seconds
+    setTimeout(function() {
+        $(".alert").alert('close');
+    }, 3000);
+}
+
+$(document).ready(function(){
+    // Show Add Product Modal
+    $("#productAdd").click(function(){
+        $("#addProductModal").modal('show');
+    });
+
+    // Insert Product
+    $("#btnSave").click(function () {
+        var formData = new FormData();
+        formData.append("name", $("#txtName").val());
+        formData.append("category", $("#txtCategory").val());
+        formData.append("supplier", $("#txtSupplier").val());
+        formData.append("price", $("#txtPrice").val());
+        formData.append("stock", $("#txtStock").val());
+        formData.append("size", $("#txtSize").val());
+        formData.append("color", $("#txtColor").val());
+        formData.append("status", $("#txtStatus").val());
+        formData.append("product_code", $("#txtProductCode").val());
+        formData.append("picture", $("#txtPicture")[0].files[0]);
+
+        // Validate required fields
+        if (!$("#txtProductCode").val() || !$("#txtName").val() || !$("#txtCategory").val() || 
+            !$("#txtSupplier").val() || !$("#txtPrice").val() || !$("#txtStock").val()) {
+            showAlert("Please fill in all required fields!", "danger");
+            return;
+        }
+
+        $.ajax({
+            url: "product/product_add.php",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                if (data == "1") {
+                    showAlert("Product added successfully!", "success");
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert("Error: " + data, "danger");
+                }
+            },
+            error: function(xhr, status, error) {
+                showAlert("An error occurred: " + error, "danger");
+            }
+        });
+    });
+
+    // Show Update Product Modal
+    $("#tblProduct").on("click", ".update", function () {
+        var row = $(this).closest("tr");
+        var id = row.find("td").eq(0).text();
+
+        $.post("product/product_get.php", { id: id }, function (data) {
+            var product = JSON.parse(data);
+
+            // Populate the update modal fields
+            $("#txtUpdateProductCode").val(product.product_code); 
+            $("#txtUpdateName").val(product.name);
+            $("#txtUpdateCategory").val(product.catid);
+            $("#txtUpdateSupplier").val(product.supplier_id);
+            $("#txtUpdatePrice").val(product.price);
+            $("#txtUpdateStock").val(product.stock);
+            $("#txtUpdateSize").val(product.size);
+            $("#txtUpdateColor").val(product.color);
+            $("#productId").val(id);
+
+            // Populate the current picture
+            var picturePath = "product/uploads/" + product.image;
+            $("#currentPicture").attr("src", picturePath);
+
+            $("#updateProductModal").modal('show');
+        }).fail(function() {
+            showAlert("Failed to load product data!", "danger");
+        });
+    });
+
+    // Search Product
+    $("#searchProduct").on("input", function () {
+        var searchQuery = $(this).val().toLowerCase();
+        $("#tblProduct tbody tr").each(function () {
+            var rowText = $(this).text().toLowerCase();
+            $(this).toggle(rowText.indexOf(searchQuery) !== -1);
+        });
+    });
+
+    // Update Product
+    $("#btnUpdateSave").click(function () {
+        var id = $("#productId").val();
+        var name = $("#txtUpdateName").val();
+        var category = $("#txtUpdateCategory").val();
+        var supplier = $("#txtUpdateSupplier").val();
+        var price = $("#txtUpdatePrice").val();
+        var stock = $("#txtUpdateStock").val();
+        var size = $("#txtUpdateSize").val();
+        var color = $("#txtUpdateColor").val();
+        var status = $("#txtUpdateStatus").val();
+        var product_code = $("#txtUpdateProductCode").val();
+        var picture = $("#txtUpdatePicture")[0].files[0];
+
+        // Validate required fields
+        if (!product_code || !name || !category || !supplier || !price || !stock) {
+            showAlert("Please fill in all required fields!", "danger");
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append("id", id);
+        formData.append("name", name);
+        formData.append("category", category);
+        formData.append("supplier", supplier);
+        formData.append("price", price);
+        formData.append("stock", stock);
+        formData.append("size", size);
+        formData.append("color", color);
+        formData.append("status", status);
+        formData.append("product_code", product_code);
+        if (picture) {
+            formData.append("picture", picture);
+        }
+
+        $.ajax({
+            url: "product/product_update.php",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                if (data == "1") {
+                    showAlert("Product updated successfully!", "success");
+                    setTimeout(function(){
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert("Error updating product: " + data, "danger");
+                }
+            },
+            error: function(xhr, status, error) {
+                showAlert("An error occurred: " + error, "danger");
+            }
+        });
+    });
+
+    // Delete Product
+    $("#tblProduct").on("click", ".del", function(){
+        var row = $(this).closest("tr");
+        var id = row.find("td").eq(0).text();
+        $("#deleteProductModal").modal('show');
+        $("#productToDelete").val(id);
+    });
+
+    // Confirm Delete
+    $("#btnDeleteConfirm").click(function(){
+        var id = $("#productToDelete").val();
+
+        $.post("product/product_delete.php", {productid: id}, function(data){
+            if(data == "1"){
+                showAlert("Product deleted successfully!", "success");
+                setTimeout(function(){
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert("Error deleting product!", "danger");
+            }
+        }).fail(function() {
+            showAlert("Failed to delete product!", "danger");
+        });
+    });
+});
+</script>
 
 <!-- ======= Footer ======= -->
 <?php include('include/footer.php') ?>

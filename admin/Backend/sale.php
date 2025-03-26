@@ -3,84 +3,143 @@
 
 <main id="main" class="main">
 
+<!-- Alert Message Container -->
+<div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; width: 300px;"></div>
+
 <script>
+// Function to show alert messages
+function showAlert(message, type) {
+    var alertClass = 'alert-' + type;
+    var alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Append alert to container
+    $("#alertContainer").append(alertHtml);
+    
+    // Auto-remove alert after 3 seconds
+    setTimeout(function() {
+        $(".alert").alert('close');
+    }, 3000);
+}
+
 $(document).ready(function() {
     // Redirect to sale_product.php when Add Sale button is clicked
     $("#saleAdd").click(function() {
         window.location.href = "sale_product.php";
     });
     
-    $(document).ready(function () {
     // Open Update Sale Modal
     $(document).on("click", ".updateSale", function () {
         var saleId = $(this).data("id");
 
         $.ajax({
-            url: "sale/sale_get.php", // PHP script to fetch sale details
+            url: "sale/sale_get.php",
             type: "GET",
             data: { id: saleId },
             success: function (data) {
-                var sale = JSON.parse(data);
+                try {
+                    var sale = JSON.parse(data);
+                    
+                    // Populate the update modal fields
+                    $("#updateSaleId").val(sale.sale_id);
+                    $("#updateProductCode").val(sale.product_code);
+                    $("#updateProductName").val(sale.product_name);
+                    $("#updatePrice").val(sale.price);
+                    $("#updateQuantity").val(sale.quantity);
+                    $("#updateColor").val(sale.color);
+                    $("#updateSaleDate").val(sale.sale_date.replace(" ", "T"));
+                    $("#updateDiscount").val(sale.discount);
+                    $("#updateTotalAmount").val(sale.total_amount);
+                    $("#updateStatus").val(sale.status);
 
-                // Populate the update modal fields
-                $("#updateSaleId").val(sale.sale_id);
-                $("#updateProductCode").val(sale.product_code);
-                $("#updateProductName").val(sale.product_name);
-                $("#updatePrice").val(sale.price);
-                $("#updateQuantity").val(sale.quantity);
-                $("#updateColor").val(sale.color);
-                $("#updateSaleDate").val(sale.sale_date.replace(" ", "T")); // Convert to datetime-local format
-                $("#updateDiscount").val(sale.discount);
-                $("#updateTotalAmount").val(sale.total_amount);
-                $("#updateStatus").val(sale.status);
-
-                $("#updateSaleModal").modal("show"); // Show the update modal
+                    $("#updateSaleModal").modal("show");
+                } catch (e) {
+                    showAlert("Error parsing sale data!", "danger");
+                    console.error("Error parsing JSON:", e);
+                }
+            },
+            error: function(xhr, status, error) {
+                showAlert("Failed to load sale data!", "danger");
+                console.error("AJAX Error:", error);
             }
         });
     });
 
     // Update Sale
     $("#btnUpdateSale").click(function () {
-        var formData = $("#updateSaleForm").serialize(); // Serialize form data
+        var formData = $("#updateSaleForm").serialize();
+
+        // Validate required fields
+        if (!$("#updateQuantity").val() || !$("#updateDiscount").val()) {
+            showAlert("Please fill in all required fields!", "danger");
+            return;
+        }
 
         $.ajax({
-            url: "sale/sale_update.php", // PHP script to handle the update
+            url: "sale/sale_update.php",
             type: "POST",
             data: formData,
             success: function (data) {
                 if (data == "1") {
-                    alert("Sale updated successfully.");
-                    location.reload(); // Reload the page to reflect changes
+                    showAlert("Sale updated successfully!", "success");
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert("Error updating sale.");
+                    showAlert("Error updating sale: " + data, "danger");
                 }
+            },
+            error: function(xhr, status, error) {
+                showAlert("Failed to update sale!", "danger");
+                console.error("AJAX Error:", error);
             }
         });
     });
-});
 
     // Delete Sale
     $(document).on("click", ".deleteSale", function () {
         var saleId = $(this).data("id");
-
-        if (confirm("Are you sure you want to delete this sale?")) {
+        
+        // Use Bootstrap modal for confirmation instead of native confirm
+        $("#deleteConfirmationModal").modal("show");
+        $("#confirmDeleteBtn").off("click").on("click", function() {
             $.ajax({
-                url: "sale/sale_delete.php", // PHP script to handle the delete
+                url: "sale/sale_delete.php",
                 type: "POST",
                 data: { id: saleId },
                 success: function (data) {
                     if (data == "1") {
-                        alert("Sale deleted successfully.");
-                        location.reload(); // Reload the page to reflect changes
+                        showAlert("Sale deleted successfully!", "success");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
                     } else {
-                        alert("Error deleting sale.");
+                        showAlert("Error deleting sale: " + data, "danger");
                     }
+                },
+                error: function(xhr, status, error) {
+                    showAlert("Failed to delete sale!", "danger");
+                    console.error("AJAX Error:", error);
                 }
             });
-        }
+            $("#deleteConfirmationModal").modal("hide");
+        });
+    });
+
+    // Calculate total amount when quantity or discount changes
+    $(document).on("input", "#updateQuantity, #updateDiscount", function() {
+        var price = parseFloat($("#updatePrice").val()) || 0;
+        var quantity = parseFloat($("#updateQuantity").val()) || 0;
+        var discount = parseFloat($("#updateDiscount").val()) || 0;
+        
+        var totalAmount = price * quantity * (1 - discount / 100);
+        $("#updateTotalAmount").val(totalAmount.toFixed(2));
     });
 });
-
 </script>
 
 <section>
@@ -97,56 +156,57 @@ $(document).ready(function() {
 
 <section>
     <div class="container">
-    <div align="right" style="margin: 10px;">
-       <a href="#" class="btn btn-outline-primary" id="saleAdd"><i class="bi bi-cart-plus"></i></a>
-    </div>
+        <div align="right" style="margin: 10px;">
+            <a href="#" class="btn btn-outline-primary" id="saleAdd"><i class="bi bi-cart-plus"></i></a>
+        </div>
 
-    <table class="table table-bordered" id="tblSales">
-    <thead>
-        <tr class="table-primary" align="center">
-            <th>ID</th>
-            <th>Product Code</th>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Color</th>
-            <th>Sale Date</th>
-            <th>Discount</th>
-            <th>Price</th>
-            <th>Total Amount</th>
-            <th>Cashier Name</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
+        <table class="table table-bordered" id="tblSales">
+            <thead>
+                <tr class="table-primary" align="center">
+                    <th>ID</th>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Color</th>
+                    <th>Sale Date</th>
+                    <th>Discount</th>
+                    <th>Price</th>
+                    <th>Total Amount</th>
+                    <th>Cashier Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
             <tbody>
-            <?php
-            $sql = "SELECT * FROM sales";
-            $result = $conn->query($sql);
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo "<tr>
-                            <td>{$row['sale_id']}</td>
-                            <td>{$row['product_code']}</td>
-                            <td>{$row['product_name']}</td>
-                            <td>{$row['quantity']}</td>
-                            <td>{$row['color']}</td>
-                            <td>{$row['sale_date']}</td>
-                            <td>{$row['discount']} %</td>
-                            <td>\${$row['price']}</td>
-                            <td>\${$row['total_amount']}</td>
-                            <td>{$row['cashier_name']}</td>
-                            <td>{$row['status']}</td>
-                            <td>
-                            <a href='#' class='updateSale btn btn-outline-warning' data-id='{$row['sale_id']}'><i class='bi bi-pencil-square'></i></a>
-                            <a href='#' class='deleteSale btn btn-outline-danger' data-id='{$row['sale_id']}'><i class='bi bi-trash'></i></a>
-                            </td>
-                            </tr>";
-                            
+                <?php
+                $sql = "SELECT * FROM sales ORDER BY sale_date DESC";
+                $result = $conn->query($sql);
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        echo "<tr>
+                                <td>{$row['sale_id']}</td>
+                                <td>{$row['product_code']}</td>
+                                <td>{$row['product_name']}</td>
+                                <td>{$row['quantity']}</td>
+                                <td>{$row['color']}</td>
+                                <td>{$row['sale_date']}</td>
+                                <td>{$row['discount']}%</td>
+                                <td>\${$row['price']}</td>
+                                <td>\${$row['total_amount']}</td>
+                                <td>{$row['cashier_name']}</td>
+                                <td>{$row['status']}</td>
+                                <td>
+                                    <a href='#' class='updateSale btn btn-outline-warning' data-id='{$row['sale_id']}'><i class='bi bi-pencil-square'></i></a>
+                                    <a href='#' class='deleteSale btn btn-outline-danger' data-id='{$row['sale_id']}'><i class='bi bi-trash'></i></a>
+                                </td>
+                              </tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='12' class='text-center'>No sales records found</td></tr>";
                 }
-            }
-            ?>
-        </tbody>
-      </table>
+                ?>
+            </tbody>
+        </table>
     </div>
 </section>
 
@@ -186,8 +246,8 @@ $(document).ready(function() {
                         <input type="datetime-local" class="form-control" id="updateSaleDate" name="sale_date" required>
                     </div>
                     <div class="mb-3">
-                        <label>Discount</label>
-                        <input type="number" class="form-control" id="updateDiscount" name="discount" required>
+                        <label>Discount (%)</label>
+                        <input type="number" class="form-control" id="updateDiscount" name="discount" min="0" max="100" required>
                     </div>
                     <div class="mb-3">
                         <label>Total Amount</label>
@@ -211,7 +271,24 @@ $(document).ready(function() {
     </div>
 </div>
 
-</main><!-- End #main -->
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this sale record?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<!-- ======= Footer ======= -->
+</main><!-- End #main -->
 <?php include('include/footer.php') ?>
