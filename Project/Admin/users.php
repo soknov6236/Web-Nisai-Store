@@ -22,16 +22,17 @@
         <a href="#" class="btn btn-outline-primary" id="userAdd"><i class="bi bi-person-plus"></i></a>
       </div>
       <table class="table table-bordered" id="tbluser">
-        <thead>
-          <tr class="table-primary" align="center">
-            <td>User ID</td>
-            <td>Username</td>
-            <td>Email</td>
-            <td>Created User</td>
-            <td>Status</td>
-            <td width="200px">Action</td>
-          </tr>
-        </thead>
+      <thead>
+        <tr class="table-primary" align="center">
+          <td>User ID</td>
+          <td>Username</td>
+          <td>Email</td>
+          <td>Role</td>  
+          <td>Created User</td>
+          <td>Status</td>
+          <td width="200px">Action</td>
+        </tr>
+      </thead>
         <tbody>
           <?php
           $sql = "SELECT * FROM users";
@@ -42,6 +43,7 @@
                       <td>{$row['id']}</td>
                       <td>{$row['username']}</td>
                       <td>{$row['email']}</td>
+                      <td>" . ucfirst($row['role']) . "</td>  <!-- Display role -->
                       <td>{$row['created_at']}</td>
                       <td>{$row['status']}</td>
                       <td>
@@ -57,46 +59,109 @@
     </div>
   </section>
 
-  <!-- Add User Modal -->
-  <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Add new user</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row">
+            <div class="col">
+              Username:
+              <input type="text" class="form-control" id="txtuser">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              Email:
+              <input type="email" class="form-control" id="txtemail">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              Password:
+              <input type="password" class="form-control" id="txtpass">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              Role: <!-- Added role selection -->
+              <select class="form-control" id="txtrole">
+                <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              Status:
+              <input type="radio" name="rgstatus" class="stat" value="0" checked> Active
+              <input type="radio" name="rgstatus" class="stat" value="1"> Inactive
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal"><i class="ri-close-fill"></i></button>
+        <button type="button" class="btn btn-outline-primary" id="btnsave"><i class="ri-save-3-line"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Update User Modal -->
+  <div class="modal fade" id="updateUser" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Add new user</h1>
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit User</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form>
             <div class="row">
               <div class="col">
+                User ID:
+                <input type="text" class="form-control" id="txtuseridU" readonly>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
                 Username:
-                <input type="text" class="form-control" id="txtuser">
+                <input type="text" class="form-control" id="txtuserU">
               </div>
             </div>
             <div class="row">
               <div class="col">
                 Email:
-                <input type="email" class="form-control" id="txtemail">
+                <input type="email" class="form-control" id="txtemailU">
               </div>
             </div>
-            <div class="row">
+            <div class="row">  <!-- Added role selection -->
               <div class="col">
-                Password:
-                <input type="password" class="form-control" id="txtpass">
+                Role:
+                <select class="form-control" id="txtroleU">
+                  <option value="employee">Employee</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             </div>
             <div class="row">
               <div class="col">
                 Status:
-                <input type="radio" name="rgstatus" class="stat" value="0" checked> Active
-                <input type="radio" name="rgstatus" class="stat" value="1"> Inactive
+                <input type="radio" name="rgstatusU" value="0"> Active
+                <input type="radio" name="rgstatusU" value="1"> Inactive
               </div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal"><i class="ri-close-fill"></i></button>
-          <button type="button" class="btn btn-outline-primary" id="btnsave"><i class="ri-save-3-line"></i></button>
+          <button type="button" class="btn btn-outline-primary" id="btnsavechange"><i class="ri-save-3-line"></i></button>
         </div>
       </div>
     </div>
@@ -162,11 +227,13 @@ $(function () {
     $("#addUserModal").modal('show');
   });
 
+
   // Save 
   $("#btnsave").click(function () {
     var user = $("#txtuser").val();
     var email = $("#txtemail").val();
     var pass = $("#txtpass").val();
+    var role = $("#txtrole").val();  // Get role value
     var status = $('input[name="rgstatus"]:checked').val();
 
     if (user == "" || email == "" || pass == "") {
@@ -174,50 +241,61 @@ $(function () {
       return;
     }
 
-    $.post("user/add_users.php", { user: user, email: email, pass: pass, status: status }, function (data) {
+    $.post("user/add_users.php", { 
+      user: user, 
+      email: email, 
+      pass: pass, 
+      role: role,  // Add role to post data
+      status: status 
+    }, function (data) {
       if (data == "1") {
         showAlert("User added successfully!", "success");
         setTimeout(function () {
           window.location.href = "users.php";
-        }, 1000); // Redirect after 1.5 seconds
+        }, 1000);
       } else {
         showAlert("Error: " + data, "danger");
       }
     });
   });
 
-  // Select data to show on Modal for updating ...
+  // Update the edit function to include role
   $("#tbluser").on('click', '.edit', function () {
     var current_row = $(this).closest("tr");
     var id = current_row.find("td").eq(0).text();
     var user = current_row.find("td").eq(1).text();
     var email = current_row.find("td").eq(2).text();
+    var role = current_row.find("td").eq(3).text().toLowerCase();  // Get role
     var status = current_row.find("td").eq(5).text();
 
     $("#txtuseridU").val(id);
     $("#txtuserU").val(user);
     $("#txtemailU").val(email);
+    $("#txtroleU").val(role);  // Set role in form
     $("input[name=rgstatusU][value='" + status + "']").prop("checked", true);
     $("#updateUser").modal("show");
   });
 
+  // Update the save changes function to include role
   $("#btnsavechange").click(function () {
     var userid = $("#txtuseridU").val();
     var user = $("#txtuserU").val();
     var email = $("#txtemailU").val();
+    var role = $("#txtroleU").val();  // Get role value
     var status = $('input[name="rgstatusU"]:checked').val();
 
     $.post("user/user_update.php", {
       userid: userid,
       user: user,
       email: email,
+      role: role,  // Add role to post data
       status: status
     }, function (data) {
       if (data == "1") {
         showAlert("User updated successfully!", "success");
         setTimeout(function () {
           window.location.href = "users.php";
-        }, 1000); // Redirect after 1.5 seconds
+        }, 1000);
       } else {
         showAlert("Error: " + data, "danger");
       }
